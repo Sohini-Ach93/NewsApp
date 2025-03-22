@@ -10,11 +10,12 @@ import Foundation
 class NewsListViewModel: ObservableObject {
     @Published var articles: [Article] = []
 
-    private let service = NewsAPIService()
+    private let service : NewsAPIServiceProtocol
     private let cacheFile = "cached_articles.json"
     private let bookmarkCacheFile = "bookmarked_articles.json"
 
-    init() {
+    init(service: NewsAPIServiceProtocol = NewsAPIService()) {
+        self.service = service
         loadArticlesFromCache()
         loadBookmarksFromCache() 
         fetchNews()
@@ -30,14 +31,17 @@ class NewsListViewModel: ObservableObject {
         }
     }
 
-    private func fetchLikesAndCommentsForArticles() {
+    func fetchLikesAndCommentsForArticles() {
         let group = DispatchGroup()
+        
+        // Copy the articles to avoid modifying self.articles while iterating.
+        var updatedArticles = self.articles
 
         for index in articles.indices {
             let articleID = articles[index].url
                 .replacingOccurrences(of: "https://", with: "")
                 .replacingOccurrences(of: "/", with: "-")
-
+            
             group.enter()
             service.fetchArticleDetails(articleID: articleID) { [weak self] details in
                 guard let self = self, let details = details else {
@@ -45,21 +49,20 @@ class NewsListViewModel: ObservableObject {
                     return
                 }
 
+                // Safely modify the local copy of the articles
                 DispatchQueue.main.async {
-                    var updatedArticle = self.articles[index]
-                    updatedArticle.likes = details.likes
-                    updatedArticle.comments = details.comments
-                    self.articles[index] = updatedArticle
+                    updatedArticles[index].likes = details.likes
+                    updatedArticles[index].comments = details.comments
                     group.leave()
                 }
             }
         }
 
+        // When all fetches are complete, update the original articles array
         group.notify(queue: .main) {
+            self.articles = updatedArticles
             self.saveArticlesToCache() // Save only after all likes/comments are updated
-            print(self.articles)
-            let abc = self.articles
-            print(self.articles)
+            print(self.articles)  // For debugging
         }
     }
 
@@ -96,6 +99,11 @@ class NewsListViewModel: ObservableObject {
     }
     
     // MARK: - BookMarking
+    
+    func isBookmarked(_ article: Article) -> Bool {
+        return articles.first(where: { $0.url == article.url })?.isBookmarked ?? false
+    }
+    
     func toggleBookmark(for article: Article) {
         article.isBookmarked.toggle()
         saveBookmarksToCache()

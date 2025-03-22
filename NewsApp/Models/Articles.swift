@@ -57,6 +57,26 @@ class Article: Codable, Identifiable, ObservableObject {
         try additional.encodeIfPresent(comments, forKey: .comments)
         try additional.encode(isBookmarked, forKey: .isBookmarked)
     }
+    
+    init(
+        title: String? = nil,
+        description: String? = nil,
+        author: String? = nil,
+        url: String,
+        urlToImage: String? = nil,
+        likes: Int? = nil,
+        comments: Int? = nil,
+        isBookmarked: Bool = false
+    ) {
+        self.title = title
+        self.description = description
+        self.author = author
+        self.url = url
+        self.urlToImage = urlToImage
+        self.likes = likes
+        self.comments = comments
+        self.isBookmarked = isBookmarked
+    }
 }
 
 struct ArticleDetails: Codable {

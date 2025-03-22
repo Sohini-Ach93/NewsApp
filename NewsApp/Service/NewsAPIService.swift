@@ -6,7 +6,12 @@
 //
 
 import Foundation
-class NewsAPIService {
+protocol NewsAPIServiceProtocol {
+    func fetchTopHeadlines(completion: @escaping ([Article]) -> Void)
+    func fetchArticleDetails(articleID: String, completion: @escaping (ArticleDetails?) -> Void)
+}
+
+class NewsAPIService: NewsAPIServiceProtocol {
     func fetchTopHeadlines(completion: @escaping ([Article]) -> Void) {
         APIClient.shared.request(urlString: Endpoints.newsBaseURL) { (result: Result<ArticleResponse, Error>) in
             switch result {
