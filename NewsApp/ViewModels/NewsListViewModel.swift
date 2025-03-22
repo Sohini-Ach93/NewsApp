@@ -12,9 +12,11 @@ class NewsListViewModel: ObservableObject {
 
     private let service = NewsAPIService()
     private let cacheFile = "cached_articles.json"
+    private let bookmarkCacheFile = "bookmarked_articles.json"
 
     init() {
         loadArticlesFromCache()
+        loadBookmarksFromCache() 
         fetchNews()
     }
 
@@ -90,6 +92,48 @@ class NewsListViewModel: ObservableObject {
             }
         } catch {
             print("Error loading cached articles:", error)
+        }
+    }
+    
+    // MARK: - BookMarking
+    func toggleBookmark(for article: Article) {
+        article.isBookmarked.toggle()
+        saveBookmarksToCache()
+    }
+
+    func getBookmarkedArticles() -> [Article] {
+        return articles.filter { $0.isBookmarked }
+    }
+    
+    private func getBookmarkCacheURL() -> URL {
+        let docDir = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask).first!
+        return docDir.appendingPathComponent(bookmarkCacheFile)
+    }
+
+    private func saveBookmarksToCache() {
+        let bookmarked = articles.filter { $0.isBookmarked }
+        do {
+            let data = try JSONEncoder().encode(bookmarked)
+            try data.write(to: getBookmarkCacheURL())
+        } catch {
+            print("Failed to save bookmarks:", error)
+        }
+    }
+
+    private func loadBookmarksFromCache() {
+        let url = getBookmarkCacheURL()
+        guard FileManager.default.fileExists(atPath: url.path) else { return }
+
+        do {
+            let data = try Data(contentsOf: url)
+            let bookmarked = try JSONDecoder().decode([Article].self, from: data)
+            for bookmarkedArticle in bookmarked {
+                if let index = articles.firstIndex(where: { $0.url == bookmarkedArticle.url }) {
+                    articles[index].isBookmarked = true
+                }
+            }
+        } catch {
+            print("Failed to load bookmarks:", error)
         }
     }
 }

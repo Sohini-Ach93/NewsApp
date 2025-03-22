@@ -7,6 +7,7 @@
 
 import Foundation
 import SwiftUI
+
 struct NewsListView: View {
     @StateObject private var viewModel = NewsListViewModel()
 
@@ -14,7 +15,7 @@ struct NewsListView: View {
         NavigationView {
             List(viewModel.articles) { article in
                 NavigationLink(destination: ArticleDetailView(article: article)) {
-                    NewsCell(article: article)
+                    NewsCell(article: article, viewModel: viewModel)
                 }
             }
             .navigationTitle("Top Headlines")

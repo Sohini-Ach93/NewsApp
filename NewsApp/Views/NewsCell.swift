@@ -11,10 +11,13 @@ import SwiftUI
 struct NewsCell: View {
     @ObservedObject var article: Article
     @StateObject private var imageLoader = ImageLoader()
+    
+    // Inject the view model so you can call toggleBookmark
+    @ObservedObject var viewModel: NewsListViewModel
 
     var body: some View {
         VStack(alignment: .leading) {
-            HStack {
+            HStack(alignment: .top) {
                 imageLoader.image?
                     .resizable()
                     .frame(width: 80, height: 80)
@@ -23,11 +26,27 @@ struct NewsCell: View {
                         imageLoader.load(from: article.urlToImage)
                     }
 
-                VStack(alignment: .leading) {
-                    Text(article.title ?? "").bold()
+                VStack(alignment: .leading, spacing: 4) {
+                    HStack {
+                        Text(article.title ?? "")
+                            .font(.headline)
+                            .lineLimit(2)
+                        Spacer()
+
+                        // ✅ Bookmark icon
+                        Button(action: {
+                            viewModel.toggleBookmark(for: article)
+                        }) {
+                            Image(systemName: article.isBookmarked ? "bookmark.fill" : "bookmark")
+                                .foregroundColor(.blue)
+                        }
+                        .buttonStyle(.plain)
+                    }
+
                     Text(article.description ?? "No description")
                         .font(.subheadline)
                         .lineLimit(2)
+
                     Text("By: \(article.author ?? "Unknown")")
                         .font(.caption)
                         .foregroundColor(.gray)
@@ -49,5 +68,6 @@ struct NewsCell: View {
                     .padding(.top, 4)
             }
         }
+        .padding(.vertical, 8)
     }
 }
