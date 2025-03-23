@@ -19,7 +19,7 @@ class Article: Codable, Identifiable, ObservableObject {
 
     @Published var likes: Int?
     @Published var comments: Int?
-    @Published var isBookmarked: Bool = false  // ✅ Add this
+    @Published var isBookmarked: Bool = false  
 
     private enum CodingKeys: String, CodingKey {
         case title, description, author, url, urlToImage

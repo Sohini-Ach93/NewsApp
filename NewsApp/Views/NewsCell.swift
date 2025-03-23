@@ -8,11 +8,8 @@
 import Foundation
 import SwiftUI
 
-import SwiftUI
-
 struct NewsCell: View {
     @ObservedObject var article: Article
-    @StateObject private var imageLoader = ImageLoader()
 
     @ObservedObject var viewModel: NewsListViewModel
 

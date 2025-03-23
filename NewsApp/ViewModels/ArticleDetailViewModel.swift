@@ -9,7 +9,12 @@ import Foundation
 
 class ArticleDetailViewModel: ObservableObject {
     @Published var details: ArticleDetails?
-    private let service = NewsAPIService()
+    private let service: NewsAPIServiceProtocol
+
+        init(service: NewsAPIServiceProtocol = NewsAPIService()) {
+            self.service = service
+        }
+
 
     func fetchDetails(for article: Article) {
         let articleID = getArticleID(from: article)

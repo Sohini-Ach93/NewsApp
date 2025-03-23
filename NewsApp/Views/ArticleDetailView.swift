@@ -13,23 +13,38 @@ import SwiftUI
 struct ArticleDetailView: View {
     let article: Article
     @StateObject private var viewModel = ArticleDetailViewModel()
-    @StateObject private var imageLoader = ImageLoader()
 
     var body: some View {
         ScrollView {
             VStack(alignment: .leading, spacing: 16) {
                 
-                if let image = imageLoader.image {
-                    image
-                        .resizable()
-                        .aspectRatio(contentMode: .fit)
-                        .frame(maxWidth: .infinity)
-                        .cornerRadius(10)
-                } else {
-                    Rectangle()
-                        .fill(Color.gray.opacity(0.3))
-                        .frame(height: 200)
-                        .cornerRadius(10)
+                AsyncImage(url: URL(string: article.urlToImage ?? "")) { phase in
+                    switch phase {
+                    case .empty:
+                        // Placeholder
+                        Image("Placeholder")
+                            .resizable()
+                            .aspectRatio(contentMode: .fit)
+                            .frame(maxWidth: .infinity)
+                            .cornerRadius(10)
+
+                    case .success(let image):
+                        image
+                            .resizable()
+                            .aspectRatio(contentMode: .fit)
+                            .frame(maxWidth: .infinity)
+                            .cornerRadius(10)
+
+                    case .failure:
+                        // Fallback if image fails to load
+                        Image("Placeholder")
+                            .resizable()
+                            .aspectRatio(contentMode: .fit)
+                            .frame(maxWidth: .infinity)
+                            .cornerRadius(10)
+                    @unknown default:
+                        EmptyView()
+                    }
                 }
 
                 // ✅ Article details
@@ -63,7 +78,6 @@ struct ArticleDetailView: View {
         }
         .navigationTitle("Article")
         .onAppear {
-            imageLoader.load(from: article.urlToImage)
             viewModel.fetchDetails(for: article)
         }
     }
