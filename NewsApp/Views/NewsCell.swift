@@ -20,18 +20,31 @@ struct NewsCell: View {
         VStack(alignment: .leading) {
             HStack(alignment: .center, spacing: 12) {
 
-                // ✅ Correct image handling
-                if let image = imageLoader.image {
-                    image
-                        .resizable()
-                        .frame(width: 100, height: 120)
-                        .cornerRadius(8)
-                } else {
-                    // Placeholder while loading
-                    Rectangle()
-                        .fill(Color.gray.opacity(0.3))
-                        .frame(width: 100, height: 120)
-                        .cornerRadius(8)
+                AsyncImage(url: URL(string: article.urlToImage ?? "")) { phase in
+                    switch phase {
+                    case .empty:
+                        // Placeholder while loading
+                        Image("Placeholder")
+                            .resizable()
+                            .frame(width: 100, height: 120)
+                            .cornerRadius(8)
+
+                    case .success(let image):
+                        image
+                            .resizable()
+                            .frame(width: 100, height: 120)
+                            .cornerRadius(8)
+
+                    case .failure(_):
+                        // Fallback image if loading fails
+                        Image("Placeholder")
+                            .resizable()
+                            .frame(width: 100, height: 120)
+                            .cornerRadius(8)
+
+                    @unknown default:
+                        EmptyView()
+                    }
                 }
 
                 VStack(alignment: .leading, spacing: 6) {
@@ -77,8 +90,5 @@ struct NewsCell: View {
             }
         }
         .padding(.vertical, 8)
-        .onAppear {
-            imageLoader.load(from: article.urlToImage)
-        }
     }
 }

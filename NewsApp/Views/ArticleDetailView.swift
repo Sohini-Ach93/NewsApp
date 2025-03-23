@@ -19,7 +19,6 @@ struct ArticleDetailView: View {
         ScrollView {
             VStack(alignment: .leading, spacing: 16) {
                 
-                // ✅ Load and show image
                 if let image = imageLoader.image {
                     image
                         .resizable()
