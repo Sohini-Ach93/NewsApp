@@ -8,32 +8,39 @@
 import Foundation
 import SwiftUI
 
+import SwiftUI
+
 struct NewsCell: View {
     @ObservedObject var article: Article
     @StateObject private var imageLoader = ImageLoader()
-    
-    // Inject the view model so you can call toggleBookmark
+
     @ObservedObject var viewModel: NewsListViewModel
 
     var body: some View {
         VStack(alignment: .leading) {
-            HStack(alignment: .top) {
-                imageLoader.image?
-                    .resizable()
-                    .frame(width: 80, height: 80)
-                    .cornerRadius(8)
-                    .onAppear {
-                        imageLoader.load(from: article.urlToImage)
-                    }
+            HStack(alignment: .center, spacing: 12) {
 
-                VStack(alignment: .leading, spacing: 4) {
-                    HStack {
+                // ✅ Correct image handling
+                if let image = imageLoader.image {
+                    image
+                        .resizable()
+                        .frame(width: 100, height: 120)
+                        .cornerRadius(8)
+                } else {
+                    // Placeholder while loading
+                    Rectangle()
+                        .fill(Color.gray.opacity(0.3))
+                        .frame(width: 100, height: 120)
+                        .cornerRadius(8)
+                }
+
+                VStack(alignment: .leading, spacing: 6) {
+                    HStack(alignment: .top) {
                         Text(article.title ?? "")
                             .font(.headline)
                             .lineLimit(2)
                         Spacer()
 
-                        // ✅ Bookmark icon
                         Button(action: {
                             viewModel.toggleBookmark(for: article)
                         }) {
@@ -43,8 +50,9 @@ struct NewsCell: View {
                         .buttonStyle(.plain)
                     }
 
-                    Text(article.description ?? "No description")
+                    Text(article.description ?? "No description available")
                         .font(.subheadline)
+                        .foregroundColor(.secondary)
                         .lineLimit(2)
 
                     Text("By: \(article.author ?? "Unknown")")
@@ -69,5 +77,8 @@ struct NewsCell: View {
             }
         }
         .padding(.vertical, 8)
+        .onAppear {
+            imageLoader.load(from: article.urlToImage)
+        }
     }
 }
